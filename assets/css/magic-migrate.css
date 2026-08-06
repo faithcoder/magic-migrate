@@ -1,0 +1,309 @@
+.magic-migrate-wrap {
+    max-width: 960px;
+    margin: 20px auto;
+}
+
+.magic-migrate-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 24px;
+    padding: 0 0 16px 0;
+    margin-bottom: 0;
+}
+
+.magic-migrate-header .dashicons {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+}
+
+.magic-migrate-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 24px;
+}
+
+.magic-migrate-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 20px;
+    text-decoration: none;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s ease;
+}
+
+.magic-migrate-tab:hover {
+    color: #2271b1;
+}
+
+.magic-migrate-tab.active {
+    color: #2271b1;
+    border-bottom-color: #2271b1;
+}
+
+.magic-migrate-content {
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    border-radius: 4px;
+    padding: 24px;
+}
+
+.magic-migrate-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.magic-migrate-section .description {
+    color: #646970;
+    margin-bottom: 20px;
+}
+
+.magic-migrate-dropzone {
+    border: 2px dashed #c3c4c7;
+    border-radius: 8px;
+    padding: 60px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #f9f9f9;
+}
+
+.magic-migrate-dropzone:hover,
+.magic-migrate-dropzone--active {
+    border-color: #2271b1;
+    background: #f0f6fc;
+}
+
+.magic-migrate-upload-icon {
+    font-size: 48px !important;
+    width: 48px !important;
+    height: 48px !important;
+    color: #2271b1;
+    margin-bottom: 16px;
+}
+
+.magic-migrate-dropzone-text strong {
+    font-size: 16px;
+    color: #1d2327;
+}
+
+.magic-migrate-dropzone-text small {
+    color: #646970;
+}
+
+.magic-migrate-progress {
+    background: #f9f9f9;
+    border: 1px solid #e2e4e7;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.magic-migrate-progress-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #50575e;
+}
+
+#magic-migrate-filename {
+    font-weight: 600;
+    color: #1d2327;
+    word-break: break-all;
+}
+
+.magic-migrate-progress-bar {
+    height: 8px;
+    background: #e2e4e7;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.magic-migrate-progress-fill {
+    height: 100%;
+    background: #2271b1;
+    border-radius: 4px;
+    transition: width 0.2s ease;
+}
+
+.magic-migrate-progress-indeterminate {
+    animation: magic-migrate-indeterminate 2s ease-in-out infinite;
+    width: 50% !important;
+    background: linear-gradient(90deg, #2271b1, #72aee6, #2271b1);
+    background-size: 200% 100%;
+    animation: magic-migrate-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes magic-migrate-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.magic-migrate-progress-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #646970;
+}
+
+.magic-migrate-import-step {
+    margin-top: 20px;
+}
+
+.magic-migrate-import-info {
+    background: #f0f6fc;
+    border: 1px solid #c5d9ed;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.magic-migrate-import-info h3 {
+    margin: 0 0 10px 0;
+    color: #1d2327;
+}
+
+.magic-migrate-import-info p {
+    margin: 4px 0;
+    font-size: 13px;
+}
+
+.magic-migrate-actions {
+    margin-top: 16px;
+}
+
+.magic-migrate-actions .button {
+    padding: 4px 24px;
+    font-size: 14px;
+}
+
+.magic-migrate-export-options {
+    margin-bottom: 20px;
+}
+
+.magic-migrate-export-options h3 {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    color: #1d2327;
+}
+
+.magic-migrate-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid #e2e4e7;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: #fff;
+}
+
+.magic-migrate-checkbox:hover {
+    border-color: #2271b1;
+    background: #f7faff;
+}
+
+.magic-migrate-checkbox input[type="checkbox"] {
+    margin-top: 2px;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    accent-color: #2271b1;
+}
+
+.magic-migrate-checkbox span {
+    font-weight: 600;
+    font-size: 13px;
+    color: #1d2327;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.magic-migrate-checkbox small {
+    display: block;
+    color: #646970;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.magic-migrate-checkbox-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    background: #f0f0f1;
+    flex-shrink: 0;
+}
+
+.magic-migrate-checkbox-icon .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #50575e;
+}
+
+.magic-migrate-checkbox-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.magic-migrate-export-actions {
+    margin-bottom: 20px;
+}
+
+.magic-migrate-export-actions .button {
+    padding: 6px 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.magic-migrate-export-result {
+    margin-top: 16px;
+}
+
+.magic-migrate-finding-text {
+    padding: 12px;
+    color: #646970;
+}
+
+.magic-migrate-finding-text .spinner {
+    float: none;
+    margin: 0 8px 0 0;
+    vertical-align: middle;
+}
+
+.magic-migrate-backups-table {
+    margin-top: 12px;
+}
+
+.magic-migrate-backups-table code {
+    font-size: 11px;
+}
+
+.magic-migrate-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #646970;
+}
+
+.magic-migrate-empty .dashicons {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    color: #c3c4c7;
+}
