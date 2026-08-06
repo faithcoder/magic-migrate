@@ -93,17 +93,16 @@
                 '&filename=' + encodeURIComponent(self.file.name) +
                 '&chunk=' + self.currentChunk +
                 '&chunks=' + self.totalChunks +
-                '&file_uuid=' + encodeURIComponent(self.fileUuid) +
-                '&chunk_size=' + chunk.size;
+                '&file_uuid=' + encodeURIComponent(self.fileUuid);
 
-            $.ajax({
-                url: url,
-                type: 'POST',
-                data: chunk,
-                processData: false,
-                contentType: 'application/octet-stream',
-                timeout: 120000,
-                success: function (response) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', url, true);
+            xhr.timeout = 120000;
+            xhr.responseType = 'json';
+
+            xhr.onload = function () {
+                if (xhr.status === 200 && xhr.response) {
+                    var response = xhr.response;
                     if (response.success !== true) {
                         var msg = (response.data && response.data.message) ? response.data.message : 'Upload failed';
                         console.error('Magic Migrate: Chunk upload rejected', {chunk: self.currentChunk, error: msg});
@@ -125,34 +124,34 @@
                             self.uploadChunk();
                         }, 50);
                     }
-                },
-                error: function (xhr, status, errorThrown) {
-                    var serverMsg = MG.parseErrorResponse(xhr);
+                } else {
+                    self.handleChunkError();
+                }
+            };
 
-                    if (serverMsg && serverMsg.trim() !== '') {
-                        self.showError(serverMsg);
-                        return;
-                    }
+            xhr.ontimeout = function () {
+                self.showError('Upload timed out. Please try again.');
+            };
 
-                    if (status === 'timeout') {
-                        self.showError('Upload timed out. Please try again with a smaller file or check your connection.');
-                        return;
-                    }
+            xhr.onerror = function () {
+                self.handleChunkError();
+            };
 
-                    self.retryCount++;
-                    if (self.retryCount > self.maxRetries) {
-                        self.showError('Upload failed after ' + self.maxRetries + ' retries. Please check your connection and try again.');
-                        return;
-                    }
+            xhr.send(chunk);
+        },
 
-                    document.getElementById('magic-migrate-progress-chunks').textContent =
-                        'Retrying chunk ' + (self.currentChunk + 1) + ' (attempt ' + (self.retryCount + 1) + ' of ' + (self.maxRetries + 1) + ')...';
-
-                    setTimeout(function () {
-                        self.uploadChunk();
-                    }, 2000);
-                },
-            });
+        handleChunkError: function () {
+            this.retryCount++;
+            if (this.retryCount > this.maxRetries) {
+                this.showError('Upload failed after ' + this.maxRetries + ' retries. Please try again.');
+                return;
+            }
+            document.getElementById('magic-migrate-progress-chunks').textContent =
+                'Retrying chunk ' + (this.currentChunk + 1) + ' (attempt ' + (this.retryCount + 1) + ')...';
+            var self = this;
+            setTimeout(function () {
+                self.uploadChunk();
+            }, 2000);
         },
 
         onUploadComplete: function () {

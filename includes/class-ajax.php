@@ -30,7 +30,6 @@ class Magic_Migrate_Ajax {
         $chunk_index = isset($_GET['chunk']) ? intval(wp_unslash($_GET['chunk'])) : -1;
         $total_chunks = isset($_GET['chunks']) ? intval(wp_unslash($_GET['chunks'])) : 0;
         $file_uuid = isset($_GET['file_uuid']) ? sanitize_key(wp_unslash($_GET['file_uuid'])) : '';
-        $chunk_size = isset($_GET['chunk_size']) ? intval(wp_unslash($_GET['chunk_size'])) : 0;
 
         if (empty($filename) || $chunk_index < 0 || empty($file_uuid)) {
             wp_send_json_error(['message' => __('Invalid upload parameters.', 'magic-migrate')]);
@@ -59,15 +58,6 @@ class Magic_Migrate_Ajax {
         }
         fclose($input);
         fclose($output);
-
-        if ($chunk_size > 0 && $written !== $chunk_size) {
-            unlink($dest);
-            wp_send_json_error(['message' => sprintf(
-                __('Chunk size mismatch: expected %d bytes, got %d bytes.', 'magic-migrate'),
-                $chunk_size,
-                $written
-            )]);
-        }
 
         $chunks_remaining = $total_chunks - ($chunk_index + 1);
 
