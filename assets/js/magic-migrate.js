@@ -62,6 +62,13 @@
             this.retryCount = 0;
             this.fileUuid = this.generateUUID();
 
+            console.log('Magic Migrate: Starting upload', {
+                file: this.file.name,
+                size: this.formatSize(this.file.size),
+                totalChunks: this.totalChunks,
+                chunkSize: this.formatSize(chunkSize),
+            });
+
             document.getElementById('magic-migrate-dropzone').style.display = 'none';
             document.getElementById('magic-migrate-progress').style.display = 'block';
             document.getElementById('magic-migrate-filename').textContent = this.file.name;
@@ -99,6 +106,7 @@
                 success: function (response) {
                     if (response.success !== true) {
                         var msg = (response.data && response.data.message) ? response.data.message : 'Upload failed';
+                        console.error('Magic Migrate: Chunk upload rejected', {chunk: self.currentChunk, error: msg});
                         self.showError(msg);
                         return;
                     }
@@ -110,6 +118,7 @@
                     self.updateProgress(percent);
 
                     if (response.data.complete) {
+                        console.log('Magic Migrate: All chunks uploaded, reassembling...');
                         self.onUploadComplete(response.data);
                     } else {
                         setTimeout(function () {
@@ -148,6 +157,7 @@
 
         onUploadComplete: function () {
             var self = this;
+            console.log('Magic Migrate: Upload complete, preparing import...');
             document.getElementById('magic-migrate-progress-text').textContent = '100% - Upload complete!';
             document.getElementById('magic-migrate-progress-chunks').textContent = 'Finalizing...';
 

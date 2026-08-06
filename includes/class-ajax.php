@@ -18,6 +18,8 @@ class Magic_Migrate_Ajax {
     }
 
     public static function handle_upload_chunk() {
+        @set_time_limit(0);
+        @ini_set('display_errors', 0);
         check_ajax_referer('magic_migrate_nonce', 'nonce');
 
         if (!current_user_can('import')) {
@@ -37,18 +39,9 @@ class Magic_Migrate_Ajax {
             wp_send_json_error(['message' => __('No chunk data received.', 'magic-migrate')]);
         }
 
-        wp_check_filetype_and_ext(
-            $_FILES['chunk_file']['tmp_name'],
-            $filename,
-            [
-                'zip' => 'application/zip',
-                'sql' => 'text/plain',
-                'xml' => 'text/xml',
-                'wpress' => 'application/octet-stream',
-                'gz' => 'application/gzip',
-                'tar' => 'application/x-tar',
-            ]
-        );
+        if ($_FILES['chunk_file']['error'] !== UPLOAD_ERR_OK) {
+            wp_send_json_error(['message' => __('Chunk upload failed with error code: ', 'magic-migrate') . $_FILES['chunk_file']['error']]);
+        }
 
         $tmp_dir = MAGIC_MIGRATE_TEMP_DIR . '/' . $file_uuid;
         if (!file_exists($tmp_dir)) {
@@ -111,10 +104,10 @@ class Magic_Migrate_Ajax {
     }
 
     public static function handle_get_progress() {
+        @set_time_limit(0);
         check_ajax_referer('magic_migrate_nonce', 'nonce');
 
         if (!current_user_can('import')) {
-            status_header(403);
             wp_send_json_error(['message' => __('Permission denied.', 'magic-migrate')]);
         }
 
@@ -154,10 +147,10 @@ class Magic_Migrate_Ajax {
     }
 
     public static function handle_prepare_import() {
+        @set_time_limit(0);
         check_ajax_referer('magic_migrate_nonce', 'nonce');
 
         if (!current_user_can('import')) {
-            status_header(403);
             wp_send_json_error(['message' => __('Permission denied.', 'magic-migrate')]);
         }
 
@@ -217,10 +210,10 @@ class Magic_Migrate_Ajax {
     }
 
     public static function handle_import_file_content() {
+        @set_time_limit(0);
         check_ajax_referer('magic_migrate_nonce', 'nonce');
 
         if (!current_user_can('import')) {
-            status_header(403);
             wp_send_json_error(['message' => __('Permission denied.', 'magic-migrate')]);
         }
 
@@ -264,10 +257,10 @@ class Magic_Migrate_Ajax {
     }
 
     public static function handle_prepare_export() {
+        @set_time_limit(0);
         check_ajax_referer('magic_migrate_nonce', 'nonce');
 
         if (!current_user_can('export')) {
-            status_header(403);
             wp_send_json_error(['message' => __('Permission denied.', 'magic-migrate')]);
         }
 
@@ -312,10 +305,10 @@ class Magic_Migrate_Ajax {
     }
 
     public static function handle_check_export_progress() {
+        @set_time_limit(0);
         check_ajax_referer('magic_migrate_nonce', 'nonce');
 
         if (!current_user_can('export')) {
-            status_header(403);
             wp_send_json_error(['message' => __('Permission denied.', 'magic-migrate')]);
         }
 
@@ -392,10 +385,10 @@ class Magic_Migrate_Ajax {
     }
 
     public static function handle_delete_backup() {
+        @set_time_limit(0);
         check_ajax_referer('magic_migrate_nonce', 'nonce');
 
         if (!current_user_can('delete_plugins')) {
-            status_header(403);
             wp_send_json_error(['message' => __('Permission denied.', 'magic-migrate')]);
         }
 
