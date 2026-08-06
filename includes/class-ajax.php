@@ -21,7 +21,6 @@ class Magic_Migrate_Ajax {
         check_ajax_referer('magic_migrate_nonce', 'nonce');
 
         if (!current_user_can('import')) {
-            status_header(403);
             wp_send_json_error(['message' => __('Permission denied.', 'magic-migrate')]);
         }
 
@@ -31,11 +30,11 @@ class Magic_Migrate_Ajax {
         $file_uuid = isset($_POST['file_uuid']) ? sanitize_key(wp_unslash($_POST['file_uuid'])) : '';
 
         if (empty($filename) || $chunk_index < 0 || empty($file_uuid)) {
-            wp_send_json_error(['message' => __('Invalid upload parameters.', 'magic-migrate')], 400);
+            wp_send_json_error(['message' => __('Invalid upload parameters.', 'magic-migrate')]);
         }
 
         if (!isset($_FILES['chunk_file'])) {
-            wp_send_json_error(['message' => __('No chunk data received.', 'magic-migrate')], 400);
+            wp_send_json_error(['message' => __('No chunk data received.', 'magic-migrate')]);
         }
 
         wp_check_filetype_and_ext(
@@ -58,7 +57,7 @@ class Magic_Migrate_Ajax {
 
         $dest = $tmp_dir . '/' . sprintf('%s.part.%05d', $filename, $chunk_index);
         if (!move_uploaded_file($_FILES['chunk_file']['tmp_name'], $dest)) {
-            wp_send_json_error(['message' => __('Failed to save chunk.', 'magic-migrate')], 500);
+            wp_send_json_error(['message' => __('Failed to save chunk.', 'magic-migrate')]);
         }
 
         $chunks_remaining = $total_chunks - ($chunk_index + 1);
@@ -67,14 +66,14 @@ class Magic_Migrate_Ajax {
             $final_path = $tmp_dir . '/' . $filename;
             $final_fp = fopen($final_path, 'wb');
             if (!$final_fp) {
-                wp_send_json_error(['message' => __('Failed to create final file.', 'magic-migrate')], 500);
+                wp_send_json_error(['message' => __('Failed to create final file.', 'magic-migrate')]);
             }
 
             for ($i = 0; $i < $total_chunks; $i++) {
                 $part_file = $tmp_dir . '/' . sprintf('%s.part.%05d', $filename, $i);
                 if (!file_exists($part_file)) {
                     fclose($final_fp);
-                    wp_send_json_error(['message' => sprintf(__('Missing chunk %d.', 'magic-migrate'), $i)], 500);
+                    wp_send_json_error(['message' => sprintf(__('Missing chunk %d.', 'magic-migrate'), $i)]);
                 }
                 $handle = fopen($part_file, 'rb');
                 while (!feof($handle)) {
@@ -124,7 +123,7 @@ class Magic_Migrate_Ajax {
         $total_chunks = isset($_GET['chunks']) ? intval(wp_unslash($_GET['chunks'])) : 0;
 
         if (empty($file_uuid) || empty($filename)) {
-            wp_send_json_error(['message' => __('Invalid parameters.', 'magic-migrate')], 400);
+            wp_send_json_error(['message' => __('Invalid parameters.', 'magic-migrate')]);
         }
 
         $tmp_dir = MAGIC_MIGRATE_TEMP_DIR . '/' . $file_uuid;
@@ -166,14 +165,14 @@ class Magic_Migrate_Ajax {
         $filename = isset($_POST['filename']) ? sanitize_file_name(wp_unslash($_POST['filename'])) : '';
 
         if (empty($file_uuid) || empty($filename)) {
-            wp_send_json_error(['message' => __('Invalid parameters.', 'magic-migrate')], 400);
+            wp_send_json_error(['message' => __('Invalid parameters.', 'magic-migrate')]);
         }
 
         $tmp_dir = MAGIC_MIGRATE_TEMP_DIR . '/' . $file_uuid;
         $final_path = $tmp_dir . '/' . $filename;
 
         if (!file_exists($final_path)) {
-            wp_send_json_error(['message' => __('Uploaded file not found.', 'magic-migrate')], 404);
+            wp_send_json_error(['message' => __('Uploaded file not found.', 'magic-migrate')]);
         }
 
         $allowed_extensions = ['zip', 'sql', 'xml', 'wpress', 'tar', 'gz', 'tar.gz'];
@@ -185,7 +184,7 @@ class Magic_Migrate_Ajax {
             }
         }
         if (!in_array($ext, $allowed_extensions, true)) {
-            wp_send_json_error(['message' => __('Unsupported file type.', 'magic-migrate')], 400);
+            wp_send_json_error(['message' => __('Unsupported file type.', 'magic-migrate')]);
         }
 
         $backup_dir = MAGIC_MIGRATE_BACKUPS_DIR . '/' . $file_uuid;
@@ -195,7 +194,7 @@ class Magic_Migrate_Ajax {
         $result = Magic_Migrate_Import::extract_archive($final_path, $extract_path);
 
         if (is_wp_error($result)) {
-            wp_send_json_error(['message' => $result->get_error_message()], 500);
+            wp_send_json_error(['message' => $result->get_error_message()]);
         }
 
         $info = Magic_Migrate_Import::get_import_info($extract_path);
@@ -229,20 +228,20 @@ class Magic_Migrate_Ajax {
         $confirm = isset($_POST['confirm']) ? rest_sanitize_boolean(wp_unslash($_POST['confirm'])) : false;
 
         if (empty($file_uuid)) {
-            wp_send_json_error(['message' => __('Invalid parameters.', 'magic-migrate')], 400);
+            wp_send_json_error(['message' => __('Invalid parameters.', 'magic-migrate')]);
         }
 
         $data = get_transient('magic_migrate_import_' . $file_uuid);
         if (!$data) {
-            wp_send_json_error(['message' => __('Import session expired. Please re-upload.', 'magic-migrate')], 404);
+            wp_send_json_error(['message' => __('Import session expired. Please re-upload.', 'magic-migrate')]);
         }
 
         if (!$confirm) {
-            wp_send_json_error(['message' => __('Please confirm the import.', 'magic-migrate')], 400);
+            wp_send_json_error(['message' => __('Please confirm the import.', 'magic-migrate')]);
         }
 
         if (!isset($data['extract_path']) || !file_exists($data['extract_path'])) {
-            wp_send_json_error(['message' => __('Extracted files not found.', 'magic-migrate')], 404);
+            wp_send_json_error(['message' => __('Extracted files not found.', 'magic-migrate')]);
         }
 
         $result = Magic_Migrate_Import::perform_import($data['extract_path']);
@@ -250,7 +249,7 @@ class Magic_Migrate_Ajax {
         if (is_wp_error($result)) {
             $data['status'] = 'failed';
             set_transient('magic_migrate_import_' . $file_uuid, $data, DAY_IN_SECONDS);
-            wp_send_json_error(['message' => $result->get_error_message()], 500);
+            wp_send_json_error(['message' => $result->get_error_message()]);
         }
 
         $data['status'] = 'completed';
@@ -292,7 +291,7 @@ class Magic_Migrate_Ajax {
         $result = Magic_Migrate_Export::create_export($export_dir, $export_options);
 
         if (is_wp_error($result)) {
-            wp_send_json_error(['message' => $result->get_error_message()], 500);
+            wp_send_json_error(['message' => $result->get_error_message()]);
         }
 
         set_transient('magic_migrate_export_' . $export_id, [
@@ -323,12 +322,12 @@ class Magic_Migrate_Ajax {
         $export_id = isset($_GET['export_id']) ? sanitize_key(wp_unslash($_GET['export_id'])) : '';
 
         if (empty($export_id)) {
-            wp_send_json_error(['message' => __('Invalid export ID.', 'magic-migrate')], 400);
+            wp_send_json_error(['message' => __('Invalid export ID.', 'magic-migrate')]);
         }
 
         $data = get_transient('magic_migrate_export_' . $export_id);
         if (!$data) {
-            wp_send_json_error(['message' => __('Export not found.', 'magic-migrate')], 404);
+            wp_send_json_error(['message' => __('Export not found.', 'magic-migrate')]);
         }
 
         wp_send_json_success($data);
@@ -403,18 +402,18 @@ class Magic_Migrate_Ajax {
         $backup_id = isset($_POST['backup_id']) ? sanitize_key(wp_unslash($_POST['backup_id'])) : '';
 
         if (empty($backup_id)) {
-            wp_send_json_error(['message' => __('Invalid backup ID.', 'magic-migrate')], 400);
+            wp_send_json_error(['message' => __('Invalid backup ID.', 'magic-migrate')]);
         }
 
         $backup_path = MAGIC_MIGRATE_BACKUPS_DIR . '/' . $backup_id;
         if (!file_exists($backup_path)) {
-            wp_send_json_error(['message' => __('Backup not found.', 'magic-migrate')], 404);
+            wp_send_json_error(['message' => __('Backup not found.', 'magic-migrate')]);
         }
 
         $real_backup_path = realpath($backup_path);
         $real_backups_dir = realpath(MAGIC_MIGRATE_BACKUPS_DIR);
         if (!$real_backup_path || !$real_backups_dir || strpos($real_backup_path, $real_backups_dir) !== 0) {
-            wp_send_json_error(['message' => __('Invalid backup path.', 'magic-migrate')], 403);
+            wp_send_json_error(['message' => __('Invalid backup path.', 'magic-migrate')]);
         }
 
         Magic_Migrate_Export::delete_directory($real_backup_path);

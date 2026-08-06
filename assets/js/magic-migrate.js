@@ -95,9 +95,7 @@
                 data: formData,
                 processData: false,
                 contentType: false,
-                xhr: function () {
-                    return win.XMLHttpRequest ? new win.XMLHttpRequest() : null;
-                },
+                timeout: 120000,
                 success: function (response) {
                     if (response.success !== true) {
                         var msg = (response.data && response.data.message) ? response.data.message : 'Upload failed';
@@ -119,12 +117,28 @@
                         }, 50);
                     }
                 },
-                error: function (xhr, status) {
-                    self.retryCount++;
-                    if (self.retryCount > self.maxRetries) {
-                        self.showError('Upload failed after ' + self.maxRetries + ' retries. Please try again.');
+                error: function (xhr, status, errorThrown) {
+                    var serverMsg = MG.parseErrorResponse(xhr);
+
+                    if (serverMsg && serverMsg.trim() !== '') {
+                        self.showError(serverMsg);
                         return;
                     }
+
+                    if (status === 'timeout') {
+                        self.showError('Upload timed out. Please try again with a smaller file or check your connection.');
+                        return;
+                    }
+
+                    self.retryCount++;
+                    if (self.retryCount > self.maxRetries) {
+                        self.showError('Upload failed after ' + self.maxRetries + ' retries. Please check your connection and try again.');
+                        return;
+                    }
+
+                    document.getElementById('magic-migrate-progress-chunks').textContent =
+                        'Retrying chunk ' + (self.currentChunk + 1) + ' (attempt ' + (self.retryCount + 1) + ' of ' + (self.maxRetries + 1) + ')...';
+
                     setTimeout(function () {
                         self.uploadChunk();
                     }, 2000);
@@ -146,6 +160,7 @@
                     file_uuid: this.fileUuid,
                     filename: this.file.name,
                 },
+                timeout: 300000,
                 success: function (response) {
                     if (response.success !== true) {
                         var msg = (response.data && response.data.message) ? response.data.message : 'Failed to prepare import';
@@ -185,6 +200,7 @@
                     file_uuid: this.fileUuid,
                     confirm: true,
                 },
+                timeout: 600000,
                 success: function (response) {
                     if (response.success !== true) {
                         var msg = (response.data && response.data.message) ? response.data.message : 'Import failed';
@@ -270,6 +286,7 @@
                     include_plugins: document.getElementById('include-plugins').checked ? 1 : 0,
                     include_themes: document.getElementById('include-themes').checked ? 1 : 0,
                 },
+                timeout: 1800000,
                 success: function (response) {
                     if (response.success !== true) {
                         var msg = (response.data && response.data.message) ? response.data.message : 'Export failed';
@@ -360,6 +377,19 @@
         var div = document.createElement('div');
         div.appendChild(document.createTextNode(text));
         return div.innerHTML;
+    };
+
+    MG.parseErrorResponse = function (xhr) {
+        try {
+            var response = JSON.parse(xhr.responseText);
+            if (response && response.data && response.data.message) {
+                return response.data.message;
+            }
+            if (response && response.message) {
+                return response.message;
+            }
+        } catch (e) {}
+        return '';
     };
 
     $(function () {
