@@ -26,11 +26,11 @@ class Magic_Migrate_Ajax {
             wp_send_json_error(['message' => __('Permission denied.', 'magic-migrate')]);
         }
 
-        $filename = isset($_SERVER['HTTP_X_FILENAME']) ? sanitize_file_name(wp_unslash($_SERVER['HTTP_X_FILENAME'])) : '';
-        $chunk_index = isset($_SERVER['HTTP_X_CHUNK']) ? intval(wp_unslash($_SERVER['HTTP_X_CHUNK'])) : -1;
-        $total_chunks = isset($_SERVER['HTTP_X_CHUNKS']) ? intval(wp_unslash($_SERVER['HTTP_X_CHUNKS'])) : 0;
-        $file_uuid = isset($_SERVER['HTTP_X_FILE_UUID']) ? sanitize_key(wp_unslash($_SERVER['HTTP_X_FILE_UUID'])) : '';
-        $chunk_size = isset($_SERVER['HTTP_X_CHUNK_SIZE']) ? intval(wp_unslash($_SERVER['HTTP_X_CHUNK_SIZE'])) : 0;
+        $filename = isset($_GET['filename']) ? sanitize_file_name(wp_unslash($_GET['filename'])) : '';
+        $chunk_index = isset($_GET['chunk']) ? intval(wp_unslash($_GET['chunk'])) : -1;
+        $total_chunks = isset($_GET['chunks']) ? intval(wp_unslash($_GET['chunks'])) : 0;
+        $file_uuid = isset($_GET['file_uuid']) ? sanitize_key(wp_unslash($_GET['file_uuid'])) : '';
+        $chunk_size = isset($_GET['chunk_size']) ? intval(wp_unslash($_GET['chunk_size'])) : 0;
 
         if (empty($filename) || $chunk_index < 0 || empty($file_uuid)) {
             wp_send_json_error(['message' => __('Invalid upload parameters.', 'magic-migrate')]);

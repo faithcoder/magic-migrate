@@ -87,20 +87,22 @@
                 'Chunk ' + (this.currentChunk + 1) + ' of ' + this.totalChunks
             );
 
+            var url = MG.ajax_url +
+                '?action=magic_migrate_upload_chunk' +
+                '&nonce=' + encodeURIComponent(MG.nonce) +
+                '&filename=' + encodeURIComponent(self.file.name) +
+                '&chunk=' + self.currentChunk +
+                '&chunks=' + self.totalChunks +
+                '&file_uuid=' + encodeURIComponent(self.fileUuid) +
+                '&chunk_size=' + chunk.size;
+
             $.ajax({
-                url: MG.ajax_url + '?action=magic_migrate_upload_chunk&nonce=' + encodeURIComponent(MG.nonce),
+                url: url,
                 type: 'POST',
                 data: chunk,
                 processData: false,
                 contentType: 'application/octet-stream',
                 timeout: 120000,
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('X-Filename', self.file.name);
-                    xhr.setRequestHeader('X-Chunk', self.currentChunk);
-                    xhr.setRequestHeader('X-Chunks', self.totalChunks);
-                    xhr.setRequestHeader('X-File-UUID', self.fileUuid);
-                    xhr.setRequestHeader('X-Chunk-Size', chunk.size);
-                },
                 success: function (response) {
                     if (response.success !== true) {
                         var msg = (response.data && response.data.message) ? response.data.message : 'Upload failed';
