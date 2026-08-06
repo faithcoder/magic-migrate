@@ -26,21 +26,14 @@ class Magic_Migrate_Ajax {
             wp_send_json_error(['message' => __('Permission denied.', 'magic-migrate')]);
         }
 
-        $filename = isset($_POST['filename']) ? sanitize_file_name(wp_unslash($_POST['filename'])) : '';
-        $chunk_index = isset($_POST['chunk']) ? intval(wp_unslash($_POST['chunk'])) : -1;
-        $total_chunks = isset($_POST['chunks']) ? intval(wp_unslash($_POST['chunks'])) : 0;
-        $file_uuid = isset($_POST['file_uuid']) ? sanitize_key(wp_unslash($_POST['file_uuid'])) : '';
+        $filename = isset($_SERVER['HTTP_X_FILENAME']) ? sanitize_file_name(wp_unslash($_SERVER['HTTP_X_FILENAME'])) : '';
+        $chunk_index = isset($_SERVER['HTTP_X_CHUNK']) ? intval(wp_unslash($_SERVER['HTTP_X_CHUNK'])) : -1;
+        $total_chunks = isset($_SERVER['HTTP_X_CHUNKS']) ? intval(wp_unslash($_SERVER['HTTP_X_CHUNKS'])) : 0;
+        $file_uuid = isset($_SERVER['HTTP_X_FILE_UUID']) ? sanitize_key(wp_unslash($_SERVER['HTTP_X_FILE_UUID'])) : '';
+        $chunk_size = isset($_SERVER['HTTP_X_CHUNK_SIZE']) ? intval(wp_unslash($_SERVER['HTTP_X_CHUNK_SIZE'])) : 0;
 
         if (empty($filename) || $chunk_index < 0 || empty($file_uuid)) {
             wp_send_json_error(['message' => __('Invalid upload parameters.', 'magic-migrate')]);
-        }
-
-        if (!isset($_FILES['chunk_file'])) {
-            wp_send_json_error(['message' => __('No chunk data received.', 'magic-migrate')]);
-        }
-
-        if ($_FILES['chunk_file']['error'] !== UPLOAD_ERR_OK) {
-            wp_send_json_error(['message' => __('Chunk upload failed with error code: ', 'magic-migrate') . $_FILES['chunk_file']['error']]);
         }
 
         $tmp_dir = MAGIC_MIGRATE_TEMP_DIR . '/' . $file_uuid;
@@ -49,8 +42,31 @@ class Magic_Migrate_Ajax {
         }
 
         $dest = $tmp_dir . '/' . sprintf('%s.part.%05d', $filename, $chunk_index);
-        if (!move_uploaded_file($_FILES['chunk_file']['tmp_name'], $dest)) {
-            wp_send_json_error(['message' => __('Failed to save chunk.', 'magic-migrate')]);
+
+        $input = fopen('php://input', 'rb');
+        $output = fopen($dest, 'wb');
+        if (!$input || !$output) {
+            if ($input) fclose($input);
+            if ($output) fclose($output);
+            wp_send_json_error(['message' => __('Failed to write chunk to disk.', 'magic-migrate')]);
+        }
+
+        $written = 0;
+        while (!feof($input)) {
+            $buffer = fread($input, 8192);
+            fwrite($output, $buffer);
+            $written += strlen($buffer);
+        }
+        fclose($input);
+        fclose($output);
+
+        if ($chunk_size > 0 && $written !== $chunk_size) {
+            unlink($dest);
+            wp_send_json_error(['message' => sprintf(
+                __('Chunk size mismatch: expected %d bytes, got %d bytes.', 'magic-migrate'),
+                $chunk_size,
+                $written
+            )]);
         }
 
         $chunks_remaining = $total_chunks - ($chunk_index + 1);

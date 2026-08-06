@@ -83,26 +83,24 @@
             var end = Math.min(start + MG.chunk_size, this.file.size);
             var chunk = this.file.slice(start, end);
 
-            var formData = new FormData();
-            formData.append('action', 'magic_migrate_upload_chunk');
-            formData.append('nonce', MG.nonce);
-            formData.append('filename', this.file.name);
-            formData.append('chunk', this.currentChunk);
-            formData.append('chunks', this.totalChunks);
-            formData.append('file_uuid', this.fileUuid);
-            formData.append('chunk_file', chunk, this.file.name + '.part');
-
             $('#magic-migrate-progress-chunks').text(
                 'Chunk ' + (this.currentChunk + 1) + ' of ' + this.totalChunks
             );
 
             $.ajax({
-                url: MG.ajax_url,
+                url: MG.ajax_url + '?action=magic_migrate_upload_chunk&nonce=' + encodeURIComponent(MG.nonce),
                 type: 'POST',
-                data: formData,
+                data: chunk,
                 processData: false,
-                contentType: false,
+                contentType: 'application/octet-stream',
                 timeout: 120000,
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('X-Filename', self.file.name);
+                    xhr.setRequestHeader('X-Chunk', self.currentChunk);
+                    xhr.setRequestHeader('X-Chunks', self.totalChunks);
+                    xhr.setRequestHeader('X-File-UUID', self.fileUuid);
+                    xhr.setRequestHeader('X-Chunk-Size', chunk.size);
+                },
                 success: function (response) {
                     if (response.success !== true) {
                         var msg = (response.data && response.data.message) ? response.data.message : 'Upload failed';
